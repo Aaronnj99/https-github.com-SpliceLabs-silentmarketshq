@@ -246,6 +246,9 @@ export const useJarvisStore = create<JarvisStore>()(
       wsConnected: false,
       setWsConnected: (wsConnected) => set({ wsConnected }),
     }),
-    { name: 'jarvis-store' }
+    { name: 'apex-store' }
   )
 )
+
+// Alias for components that import useApexStore
+export const useApexStore = useJarvisStore
