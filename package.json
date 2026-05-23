@@ -3,9 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -H 0.0.0.0",
+    "dev:local": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -H 0.0.0.0",
     "db:init": "npx ts-node --project tsconfig.scripts.json scripts/db-init.ts",
     "calendar:auth": "npx ts-node --project tsconfig.scripts.json scripts/calendar-auth.ts",
     "worker": "npx ts-node --project tsconfig.scripts.json scripts/alert-worker.ts",
