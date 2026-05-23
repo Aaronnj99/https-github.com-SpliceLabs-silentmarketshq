@@ -5,14 +5,13 @@ import { ReminderWidget } from '@/components/widgets/ReminderWidget'
 import { ObsidianWidget } from '@/components/widgets/ObsidianWidget'
 import { SolanaWallet } from '@/components/widgets/SolanaWallet'
 import { MarketOverview } from '@/components/widgets/MarketOverview'
-import { ApexBrain } from '@/components/widgets/ApexBrain'
 
 export default function Home() {
   return (
     <div style={{
       display: 'grid',
       gridTemplateColumns: '1fr 1fr',
-      gridTemplateRows: 'auto auto auto auto auto',
+      gridTemplateRows: 'auto auto auto auto',
       gap: '16px',
       maxWidth: '100%',
     }}>
@@ -43,11 +42,6 @@ export default function Home() {
       {/* Row 4 - full width */}
       <div style={{ gridColumn: '1 / -1', gridRow: '4' }}>
         <SolanaWallet />
-      </div>
-
-      {/* Row 5 - APEX AI brain, full width */}
-      <div style={{ gridColumn: '1 / -1', gridRow: '5' }}>
-        <ApexBrain />
       </div>
     </div>
   )
