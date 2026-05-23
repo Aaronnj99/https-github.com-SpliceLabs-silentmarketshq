@@ -1,2 +1,152 @@
-# https-github.com-SpliceLabs-silentmarketshq
-app
+# JARVIS — Personal Command Center
+
+A full-stack Next.js 14 dashboard with crypto prices, calendar, reminders, Obsidian notes, Solana wallet, and price alerts.
+
+## Features
+
+- **Live Crypto Prices** — Binance WebSocket for real-time BTC, ETH, SOL prices with animated ticks
+- **Price Alerts** — Set above/below alerts with desktop notifications via background worker
+- **Google Calendar** — OAuth integration showing upcoming events for the next 7 days
+- **Reminders** — Priority-based reminders with overdue highlighting, stored in SQLite
+- **Obsidian Notes** — Browse, search, and quick-create notes in your Obsidian vault
+- **Solana Wallet** — SOL balance, SPL tokens, and recent transactions via RPC
+- **Market Overview** — Fear & Greed index, total market cap, BTC dominance
+- **Command Palette** — `⌘K` for quick navigation and search
+
+## Tech Stack
+
+- **Next.js 14** (App Router, TypeScript)
+- **Tailwind CSS** with custom dark terminal theme
+- **Zustand** for state management
+- **better-sqlite3** for local storage (alerts, reminders)
+- **Recharts** for interactive price charts
+- **Binance WebSocket** for live price feeds
+- **CoinGecko API** for market data
+- **@solana/web3.js** for wallet data
+- **Google APIs** for calendar integration
+- **shadcn/ui-style** components with Radix UI
+
+## Quick Start
+
+### 1. Install Dependencies
+
+```bash
+npm install
+```
+
+### 2. Configure Environment
+
+Copy `.env.local.example` to `.env.local` and fill in your values:
+
+```bash
+cp .env.local.example .env.local
+```
+
+### 3. Initialize Database
+
+```bash
+npm run db:init
+```
+
+### 4. Start Development Server
+
+```bash
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000)
+
+## Configuration
+
+### .env.local Variables
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `SOLANA_WALLET_ADDRESS` | Recommended | Your Solana public key (read-only) |
+| `OBSIDIAN_VAULT_PATH` | Recommended | Absolute path to your Obsidian vault |
+| `GOOGLE_CLIENT_ID` | Optional | For Google Calendar integration |
+| `GOOGLE_CLIENT_SECRET` | Optional | For Google Calendar integration |
+| `GOOGLE_REFRESH_TOKEN` | Auto-set | Set after running calendar:auth |
+| `COINGECKO_API_KEY` | Optional | Pro key for higher rate limits |
+| `HELIUS_API_KEY` | Optional | Better Solana token metadata |
+| `NEXT_PUBLIC_DEFAULT_COINS` | Optional | Coins to track, e.g. `BTC,SOL,ETH` |
+
+### Google Calendar Setup
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com)
+2. Create a project and enable the Calendar API
+3. Create OAuth 2.0 credentials (Web Application type)
+4. Add `http://localhost:3000/api/calendar/callback` as authorized redirect URI
+5. Copy client ID and secret to `.env.local`
+6. Visit `http://localhost:3000/api/calendar/auth` to connect
+
+Or use the CLI script:
+
+```bash
+npm run calendar:auth
+```
+
+### Price Alert Worker
+
+The background worker checks prices every 60 seconds and fires desktop notifications:
+
+```bash
+npm run worker
+```
+
+Keep this running in a separate terminal.
+
+## Project Structure
+
+```
+├── app/
+│   ├── api/
+│   │   ├── crypto/        # prices, alerts, OHLCV history
+│   │   ├── calendar/      # OAuth flow + events
+│   │   ├── reminders/     # CRUD endpoints
+│   │   ├── obsidian/      # notes list + search
+│   │   └── solana/        # wallet + transactions
+│   ├── settings/          # Settings page
+│   ├── layout.tsx         # Root layout with sidebar/topbar
+│   ├── page.tsx           # Main dashboard
+│   └── globals.css        # Global styles + theme
+├── components/
+│   ├── layout/            # TopBar, Sidebar, CommandPalette
+│   └── widgets/           # All dashboard widgets
+├── lib/
+│   ├── db.ts              # SQLite helpers
+│   ├── crypto.ts          # CoinGecko + Binance helpers
+│   ├── solana.ts          # Solana RPC helpers
+│   ├── google-calendar.ts # OAuth + Calendar API
+│   ├── obsidian.ts        # Vault file reader + search
+│   ├── alerts.ts          # Alert evaluation logic
+│   └── notifications.ts   # Desktop notification helper
+├── store/jarvis.ts         # Zustand store
+├── hooks/                 # SWR + WebSocket hooks
+├── scripts/
+│   ├── db-init.ts         # Database initialization
+│   ├── alert-worker.ts    # Background price checker
+│   └── calendar-auth.ts   # CLI auth helper
+└── data/                  # SQLite database (gitignored)
+```
+
+## Design
+
+- **Background**: `#080A0F` (deep space black)
+- **Accent**: `#00D4FF` (electric cyan) — primary UI accent
+- **Bitcoin**: `#FFB800` (gold)
+- **Solana**: `#9945FF` (Solana purple)
+- **Success**: `#00FF94` (electric green)
+- **Danger**: `#FF4444` (alert red)
+- **Font**: JetBrains Mono for data, Syne for headings
+- Subtle scanline overlay, card glow on hover
+
+## Keyboard Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| `⌘K` / `Ctrl+K` | Open command palette |
+| `⌘/` / `Ctrl+/` | Toggle sidebar |
+| `Esc` | Close modals/palette |
+| `↑↓` | Navigate command palette |
+| `↵` | Execute selected command |
