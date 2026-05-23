@@ -2,9 +2,9 @@
 import { useState, useEffect, useRef } from 'react'
 import { FileText, Search, X, Plus, FolderOpen, ExternalLink, Tag, ChevronRight } from 'lucide-react'
 import { useObsidian } from '@/hooks/useObsidian'
-import { useJarvisStore } from '@/store/jarvis'
+import { useJarvisStore } from '@/store/apex'
 import ReactMarkdown from 'react-markdown'
-import type { ObsidianNote } from '@/store/jarvis'
+import type { ObsidianNote } from '@/store/apex'
 import { format, parseISO } from 'date-fns'
 
 function formatDate(dateStr: string): string {

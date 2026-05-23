@@ -12,7 +12,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react'
-import { useJarvisStore } from '@/store/jarvis'
+import { useJarvisStore } from '@/store/apex'
 
 const NAV_ITEMS = [
   { href: '/', icon: LayoutDashboard, label: 'Dashboard' },

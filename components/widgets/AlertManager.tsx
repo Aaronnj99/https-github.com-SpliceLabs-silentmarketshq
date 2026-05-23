@@ -2,8 +2,8 @@
 import { useState } from 'react'
 import useSWR from 'swr'
 import { Bell, Plus, Trash2, CheckCircle2, Clock, AlertTriangle } from 'lucide-react'
-import { useJarvisStore } from '@/store/jarvis'
-import type { AlertItem } from '@/store/jarvis'
+import { useJarvisStore } from '@/store/apex'
+import type { AlertItem } from '@/store/apex'
 
 interface AlertHistoryItem {
   id: number

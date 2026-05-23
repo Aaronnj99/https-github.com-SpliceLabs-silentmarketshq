@@ -2,7 +2,7 @@
 import useSWR from 'swr'
 import { Wallet, ArrowUpRight, ArrowDownLeft, RefreshCw, ExternalLink, Link2 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
-import { useJarvisStore } from '@/store/jarvis'
+import { useJarvisStore } from '@/store/apex'
 
 interface WalletResponse {
   configured: boolean
@@ -53,7 +53,7 @@ export function SolanaWallet() {
     { refreshInterval: 60000 }
   )
 
-  const solUsd = (data?.sol ?? 0) * solPrice || data?.solUsd ?? 0
+  const solUsd = ((data?.sol ?? 0) * solPrice) || (data?.solUsd ?? 0)
 
   return (
     <div className="card" style={{ padding: '16px' }}>

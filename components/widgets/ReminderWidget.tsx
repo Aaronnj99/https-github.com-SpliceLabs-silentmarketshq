@@ -3,7 +3,7 @@ import { useState, useRef } from 'react'
 import { BellRing, Plus, Check, Trash2, Clock, AlertCircle } from 'lucide-react'
 import { useReminders } from '@/hooks/useReminders'
 import { format, isPast, isToday, isTomorrow, parseISO, formatDistanceToNow } from 'date-fns'
-import type { ReminderItem } from '@/store/jarvis'
+import type { ReminderItem } from '@/store/apex'
 
 function PriorityDot({ priority }: { priority: 'low' | 'normal' | 'high' }) {
   const colors = {

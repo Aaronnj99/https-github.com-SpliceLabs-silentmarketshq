@@ -1,8 +1,8 @@
 'use client'
 import useSWR from 'swr'
 import { useEffect } from 'react'
-import { useJarvisStore } from '@/store/jarvis'
-import type { ReminderItem } from '@/store/jarvis'
+import { useJarvisStore } from '@/store/apex'
+import type { ReminderItem } from '@/store/apex'
 
 const fetcher = (url: string) =>
   fetch(url).then((res) => {

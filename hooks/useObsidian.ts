@@ -1,8 +1,8 @@
 'use client'
 import useSWR from 'swr'
 import { useEffect } from 'react'
-import { useJarvisStore } from '@/store/jarvis'
-import type { ObsidianNote } from '@/store/jarvis'
+import { useJarvisStore } from '@/store/apex'
+import type { ObsidianNote } from '@/store/apex'
 
 interface NotesResponse {
   configured: boolean

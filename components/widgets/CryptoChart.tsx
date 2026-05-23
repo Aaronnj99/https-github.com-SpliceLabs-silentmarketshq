@@ -10,7 +10,7 @@ import {
   CartesianGrid,
 } from 'recharts'
 import { Maximize2, X, TrendingUp, TrendingDown } from 'lucide-react'
-import { useJarvisStore } from '@/store/jarvis'
+import { useJarvisStore } from '@/store/apex'
 import { formatPrice, formatMarketCap } from '@/lib/crypto'
 
 interface OHLCVPoint {

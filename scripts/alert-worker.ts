@@ -11,7 +11,7 @@ try {
   // dotenv not installed, assume env is set
 }
 
-console.log('🤖 JARVIS Alert Worker starting...')
+console.log('🤖 APEX Alert Worker starting...')
 console.log('📅 Checking prices every 60 seconds')
 
 let isChecking = false

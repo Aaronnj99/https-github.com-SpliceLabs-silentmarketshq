@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Search, LayoutDashboard, TrendingUp, FileText, Bell, Wallet, Settings, X } from 'lucide-react'
-import { useJarvisStore } from '@/store/jarvis'
+import { useJarvisStore } from '@/store/apex'
 
 interface CommandItem {
   id: string
@@ -40,7 +40,7 @@ export function CommandPalette() {
     { id: 'nav-notes', label: 'Notes', description: 'Browse Obsidian notes', icon: FileText, action: () => navigate('/notes'), category: 'Navigation' },
     { id: 'nav-alerts', label: 'Alerts', description: 'Manage price alerts', icon: Bell, action: () => navigate('/alerts'), category: 'Navigation' },
     { id: 'nav-wallet', label: 'Wallet', description: 'View Solana wallet', icon: Wallet, action: () => navigate('/wallet'), category: 'Navigation' },
-    { id: 'nav-settings', label: 'Settings', description: 'Configure JARVIS', icon: Settings, action: () => navigate('/settings'), category: 'Navigation' },
+    { id: 'nav-settings', label: 'Settings', description: 'Configure APEX', icon: Settings, action: () => navigate('/settings'), category: 'Navigation' },
   ]
 
   const dynamicCommands: CommandItem[] = [

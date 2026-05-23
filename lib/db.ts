@@ -2,7 +2,7 @@ import Database from 'better-sqlite3'
 import path from 'path'
 import fs from 'fs'
 
-const DB_PATH = path.join(process.cwd(), 'data', 'jarvis.db')
+const DB_PATH = path.join(process.cwd(), 'data', 'apex.db')
 
 // Ensure data directory exists
 const dataDir = path.dirname(DB_PATH)

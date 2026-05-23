@@ -1,8 +1,8 @@
 'use client'
 import useSWR from 'swr'
 import { useEffect } from 'react'
-import { useJarvisStore } from '@/store/jarvis'
-import type { CalendarEvent } from '@/store/jarvis'
+import { useJarvisStore } from '@/store/apex'
+import type { CalendarEvent } from '@/store/apex'
 
 interface CalendarResponse {
   connected: boolean

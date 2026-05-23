@@ -5,7 +5,7 @@ import { TopBar } from '@/components/layout/TopBar'
 import { CommandPalette } from '@/components/layout/CommandPalette'
 
 export const metadata: Metadata = {
-  title: 'JARVIS — Personal Command Center',
+  title: 'APEX — Personal Command Center',
   description: 'Your personal Bloomberg Terminal',
 }
 

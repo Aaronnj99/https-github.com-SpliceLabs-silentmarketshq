@@ -15,7 +15,7 @@ export function sendDesktopNotification(options: NotificationOptions): void {
       message: options.message,
       sound: options.sound ?? true,
       wait: options.wait ?? false,
-      icon: path.join(process.cwd(), 'public', 'jarvis-icon.png'),
+      icon: path.join(process.cwd(), 'public', 'apex-icon.png'),
     })
   } catch (error) {
     // Notifications may not be available in all environments
@@ -34,7 +34,7 @@ export function sendAlertNotification(
     p >= 1000 ? `$${p.toLocaleString('en-US', { maximumFractionDigits: 0 })}` : `$${p.toFixed(4)}`
 
   sendDesktopNotification({
-    title: `JARVIS Alert: ${coin}`,
+    title: `APEX Alert: ${coin}`,
     message: `${coin} has ${direction} ${formatPrice(targetPrice)}. Current price: ${formatPrice(currentPrice)}`,
     sound: true,
   })
@@ -42,7 +42,7 @@ export function sendAlertNotification(
 
 export function sendReminderNotification(title: string, description?: string): void {
   sendDesktopNotification({
-    title: `JARVIS Reminder: ${title}`,
+    title: `APEX Reminder: ${title}`,
     message: description ?? 'You have a reminder due.',
     sound: true,
   })

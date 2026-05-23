@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Settings, Wifi, WifiOff } from 'lucide-react'
-import { useJarvisStore } from '@/store/jarvis'
+import { useJarvisStore } from '@/store/apex'
 import { CryptoPriceBar } from '@/components/widgets/CryptoPriceBar'
 
 function Clock() {
@@ -68,7 +68,7 @@ export function TopBar() {
         zIndex: 100,
       }}
     >
-      {/* Left: JARVIS branding */}
+      {/* Left: APEX branding */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: '160px' }}>
         <div
           style={{
@@ -96,7 +96,7 @@ export function TopBar() {
             letterSpacing: '0.05em',
           }}
         >
-          JARVIS
+          APEX
         </span>
         <div
           style={{

@@ -1,4 +1,4 @@
-# JARVIS — Personal Command Center
+# APEX — Personal Command Center
 
 A full-stack Next.js 14 dashboard with crypto prices, calendar, reminders, Obsidian notes, Solana wallet, and price alerts.
 
@@ -121,7 +121,7 @@ Keep this running in a separate terminal.
 │   ├── obsidian.ts        # Vault file reader + search
 │   ├── alerts.ts          # Alert evaluation logic
 │   └── notifications.ts   # Desktop notification helper
-├── store/jarvis.ts         # Zustand store
+├── store/apex.ts         # Zustand store
 ├── hooks/                 # SWR + WebSocket hooks
 ├── scripts/
 │   ├── db-init.ts         # Database initialization

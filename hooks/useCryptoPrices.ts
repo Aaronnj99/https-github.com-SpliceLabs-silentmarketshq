@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useRef, useCallback } from 'react'
-import { useJarvisStore } from '@/store/jarvis'
+import { useJarvisStore } from '@/store/apex'
 import { getBinanceStreamUrl, parseBinanceMessage } from '@/lib/crypto'
 
 const DEFAULT_COINS = (
