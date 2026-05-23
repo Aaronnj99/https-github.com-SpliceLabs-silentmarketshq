@@ -96,6 +96,29 @@ npm run worker
 
 Keep this running in a separate terminal.
 
+## Running as a Native macOS App (Electron)
+
+APEX can run as a standalone `.app` — no browser needed, dock icon, native window.
+
+### Development (live reload)
+
+```bash
+npm install
+npm run electron:dev
+```
+
+This starts Next.js dev server and Electron simultaneously.
+
+### Build a distributable .app
+
+```bash
+npm run electron:build
+```
+
+Output is in `dist-electron/`. Drag `APEX.app` to your `/Applications` folder and it lives in your dock like any other native app.
+
+> **App icon**: Place a 1024×1024 PNG at `electron/assets/icon.png` and an `.icns` file at `electron/assets/icon.icns` before building. You can generate `.icns` from a PNG using `iconutil` on macOS.
+
 ## Project Structure
 
 ```

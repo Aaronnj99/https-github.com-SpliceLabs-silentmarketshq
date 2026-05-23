@@ -45,7 +45,7 @@ export default function Home() {
         <SolanaWallet />
       </div>
 
-      {/* Row 5 - full width AI brain */}
+      {/* Row 5 - APEX AI brain, full width */}
       <div style={{ gridColumn: '1 / -1', gridRow: '5' }}>
         <ApexBrain />
       </div>

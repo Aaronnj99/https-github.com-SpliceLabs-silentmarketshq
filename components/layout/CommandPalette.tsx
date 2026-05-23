@@ -1,14 +1,17 @@
 'use client'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Search, LayoutDashboard, TrendingUp, FileText, Bell, Wallet, Settings, X } from 'lucide-react'
+import { Search, LayoutDashboard, TrendingUp, FileText, Bell, Wallet, Settings, X, type LucideProps } from 'lucide-react'
 import { useJarvisStore } from '@/store/apex'
+import type { ForwardRefExoticComponent, RefAttributes } from 'react'
+
+type LucideIcon = ForwardRefExoticComponent<Omit<LucideProps, 'ref'> & RefAttributes<SVGSVGElement>>
 
 interface CommandItem {
   id: string
   label: string
   description?: string
-  icon: React.ComponentType<{ size?: number; color?: string }>
+  icon: LucideIcon
   action: () => void
   category: string
 }

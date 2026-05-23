@@ -103,7 +103,7 @@ function NoteModal({ note, onClose }: { note: ObsidianNote; onClose: () => void 
   )
 }
 
-function NewNoteModal({ onClose, onCreate }: { onClose: () => void; onCreate: (title: string, content: string) => Promise<void> }) {
+function NewNoteModal({ onClose, onCreate }: { onClose: () => void; onCreate: (title: string, content: string) => Promise<unknown> }) {
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [creating, setCreating] = useState(false)

@@ -8,7 +8,10 @@
     "start": "next start",
     "db:init": "npx ts-node --project tsconfig.scripts.json scripts/db-init.ts",
     "calendar:auth": "npx ts-node --project tsconfig.scripts.json scripts/calendar-auth.ts",
-    "worker": "npx ts-node --project tsconfig.scripts.json scripts/alert-worker.ts"
+    "worker": "npx ts-node --project tsconfig.scripts.json scripts/alert-worker.ts",
+    "electron:dev": "concurrently \"next dev\" \"wait-on http://localhost:3000 && electron .\"",
+    "electron:build": "BUILD_STANDALONE=1 next build && electron-builder --mac",
+    "electron:build:dir": "BUILD_STANDALONE=1 next build && electron-builder --mac --dir"
   },
   "dependencies": {
     "next": "14.2.3",
@@ -42,7 +45,10 @@
     "@radix-ui/react-tabs": "^1.0.4",
     "@radix-ui/react-scroll-area": "^1.0.5",
     "swr": "^2.2.5",
-    "@anthropic-ai/sdk": "0.27.3"
+    "@anthropic-ai/sdk": "0.27.3",
+    "electron-is-dev": "^3.0.0",
+    "wait-on": "^7.2.0",
+    "concurrently": "^8.2.2"
   },
   "devDependencies": {
     "@types/node": "^20.14.0",
@@ -51,6 +57,10 @@
     "@types/better-sqlite3": "^7.6.10",
     "@types/node-cron": "^3.0.11",
     "@types/node-notifier": "^8.0.5",
-    "ts-node": "^10.9.2"
-  }
+    "ts-node": "^10.9.2",
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3",
+    "@types/wait-on": "^5.3.4"
+  },
+  "main": "electron/main.js"
 }

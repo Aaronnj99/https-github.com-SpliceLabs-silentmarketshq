@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Settings, Check, ExternalLink, AlertCircle, RefreshCw } from 'lucide-react'
 
@@ -63,7 +63,7 @@ function StatusBadge({ ok, label }: { ok: boolean; label: string }) {
   )
 }
 
-export default function SettingsPage() {
+function SettingsContent() {
   const searchParams = useSearchParams()
   const calendarStatus = searchParams.get('calendar')
 
@@ -469,5 +469,17 @@ NEXT_PUBLIC_DEFAULT_COINS=BTC,SOL,ETH`}
         </pre>
       </SectionCard>
     </div>
+  )
+}
+
+export default function SettingsPage() {
+  return (
+    <Suspense fallback={
+      <div style={{ padding: '24px', color: '#4B5563', fontFamily: 'JetBrains Mono, monospace', fontSize: '13px' }}>
+        Loading settings...
+      </div>
+    }>
+      <SettingsContent />
+    </Suspense>
   )
 }
