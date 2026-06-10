@@ -1,14 +1,14 @@
 'use client'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Search, LayoutDashboard, TrendingUp, FileText, Bell, Wallet, Settings, X } from 'lucide-react'
+import { Search, CalendarCheck, LayoutDashboard, TrendingUp, FileText, Bell, Wallet, Settings, X, type LucideIcon } from 'lucide-react'
 import { useJarvisStore } from '@/store/jarvis'
 
 interface CommandItem {
   id: string
   label: string
   description?: string
-  icon: React.ComponentType<{ size?: number; color?: string }>
+  icon: LucideIcon
   action: () => void
   category: string
 }
@@ -35,7 +35,8 @@ export function CommandPalette() {
   )
 
   const staticCommands: CommandItem[] = [
-    { id: 'nav-home', label: 'Dashboard', description: 'Go to main dashboard', icon: LayoutDashboard, action: () => navigate('/'), category: 'Navigation' },
+    { id: 'nav-today', label: 'Today', description: 'Daily agenda & focus', icon: CalendarCheck, action: () => navigate('/'), category: 'Navigation' },
+    { id: 'nav-home', label: 'Dashboard', description: 'Go to main dashboard', icon: LayoutDashboard, action: () => navigate('/dashboard'), category: 'Navigation' },
     { id: 'nav-crypto', label: 'Crypto', description: 'View crypto prices & charts', icon: TrendingUp, action: () => navigate('/crypto'), category: 'Navigation' },
     { id: 'nav-notes', label: 'Notes', description: 'Browse Obsidian notes', icon: FileText, action: () => navigate('/notes'), category: 'Navigation' },
     { id: 'nav-alerts', label: 'Alerts', description: 'Manage price alerts', icon: Bell, action: () => navigate('/alerts'), category: 'Navigation' },

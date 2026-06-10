@@ -1,7 +1,8 @@
 import cron from 'node-cron'
 import axios from 'axios'
-import { getAlerts, triggerAlert, Alert } from '../lib/db'
-import { sendAlertNotification } from '../lib/notifications'
+import { getAlerts, triggerAlert, Alert, getDueUnnotifiedReminders, markReminderNotified } from '../lib/db'
+import { sendAlertNotification, sendReminderNotification } from '../lib/notifications'
+import { sendDailyDigest } from '../lib/daily-digest'
 import { fetchPrices, getCoinGeckoId } from '../lib/crypto'
 
 // Load environment variables if dotenv is available
@@ -11,8 +12,8 @@ try {
   // dotenv not installed, assume env is set
 }
 
-console.log('🤖 JARVIS Alert Worker starting...')
-console.log('📅 Checking prices every 60 seconds')
+console.log('🤖 JARVIS Worker starting...')
+console.log('📅 Checking prices and reminders every 60 seconds')
 
 let isChecking = false
 
@@ -81,19 +82,45 @@ async function checkAlerts() {
   }
 }
 
+async function checkReminders() {
+  try {
+    const due = getDueUnnotifiedReminders()
+    for (const reminder of due) {
+      console.log(`⏰ Reminder due: ${reminder.title}`)
+      sendReminderNotification(reminder.title, reminder.description ?? undefined)
+      markReminderNotified(reminder.id)
+    }
+  } catch (err) {
+    console.error('Reminder check error:', err)
+  }
+}
+
 // Run immediately on start
 checkAlerts()
+checkReminders()
 
 // Schedule every 60 seconds
 cron.schedule('* * * * *', checkAlerts)
+cron.schedule('* * * * *', checkReminders)
+
+// Daily digest — sent via Telegram at DAILY_DIGEST_TIME (HH:MM, default 07:00)
+const digestTime = process.env.DAILY_DIGEST_TIME ?? '07:00'
+const [digestHour, digestMinute] = digestTime.split(':').map((n) => parseInt(n, 10))
+if (!isNaN(digestHour) && !isNaN(digestMinute)) {
+  cron.schedule(`${digestMinute} ${digestHour} * * *`, () => {
+    console.log('📋 Sending daily digest...')
+    sendDailyDigest().catch((err) => console.error('Daily digest failed:', err))
+  })
+  console.log(`📋 Daily digest scheduled for ${digestTime}`)
+}
 
 // Graceful shutdown
 process.on('SIGINT', () => {
-  console.log('\n🛑 Alert worker stopping...')
+  console.log('\n🛑 JARVIS Worker stopping...')
   process.exit(0)
 })
 
 process.on('SIGTERM', () => {
-  console.log('\n🛑 Alert worker stopping...')
+  console.log('\n🛑 JARVIS Worker stopping...')
   process.exit(0)
 })

@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect } from 'react'
 import {
+  CalendarCheck,
   LayoutDashboard,
   TrendingUp,
   FileText,
@@ -15,7 +16,8 @@ import {
 import { useJarvisStore } from '@/store/jarvis'
 
 const NAV_ITEMS = [
-  { href: '/', icon: LayoutDashboard, label: 'Dashboard' },
+  { href: '/', icon: CalendarCheck, label: 'Today' },
+  { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/crypto', icon: TrendingUp, label: 'Crypto' },
   { href: '/notes', icon: FileText, label: 'Notes' },
   { href: '/alerts', icon: Bell, label: 'Alerts' },

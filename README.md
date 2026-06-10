@@ -4,10 +4,12 @@ A full-stack Next.js 14 dashboard with crypto prices, calendar, reminders, Obsid
 
 ## Features
 
+- **Today View** — The default landing page: a chronological agenda merging today's calendar events and due reminders, plus overdue items and undated high-priority "Focus" tasks, with quick-add
 - **Live Crypto Prices** — Binance WebSocket for real-time BTC, ETH, SOL prices with animated ticks
-- **Price Alerts** — Set above/below alerts with desktop notifications via background worker
+- **Price Alerts** — Set above/below alerts with desktop + Telegram notifications via background worker
 - **Google Calendar** — OAuth integration showing upcoming events for the next 7 days
-- **Reminders** — Priority-based reminders with overdue highlighting, stored in SQLite
+- **Reminders** — Priority-based reminders with overdue highlighting and due-time push notifications, stored in SQLite
+- **Telegram Notifications** — Price alerts, due reminders, and a daily morning briefing pushed straight to your phone
 - **Obsidian Notes** — Browse, search, and quick-create notes in your Obsidian vault
 - **Solana Wallet** — SOL balance, SPL tokens, and recent transactions via RPC
 - **Market Overview** — Fear & Greed index, total market cap, BTC dominance
@@ -69,6 +71,9 @@ Open [http://localhost:3000](http://localhost:3000)
 | `GOOGLE_REFRESH_TOKEN` | Auto-set | Set after running calendar:auth |
 | `COINGECKO_API_KEY` | Optional | Pro key for higher rate limits |
 | `HELIUS_API_KEY` | Optional | Better Solana token metadata |
+| `TELEGRAM_BOT_TOKEN` | Recommended | Bot token from @BotFather, for phone push notifications |
+| `TELEGRAM_CHAT_ID` | Recommended | Your Telegram chat ID (see Telegram Setup below) |
+| `DAILY_DIGEST_TIME` | Optional | Time (HH:MM, 24h) for the daily Telegram briefing, default `07:00` |
 | `NEXT_PUBLIC_DEFAULT_COINS` | Optional | Coins to track, e.g. `BTC,SOL,ETH` |
 
 ### Google Calendar Setup
@@ -86,15 +91,29 @@ Or use the CLI script:
 npm run calendar:auth
 ```
 
-### Price Alert Worker
+### Telegram Setup
 
-The background worker checks prices every 60 seconds and fires desktop notifications:
+Get JARVIS notifications pushed straight to your phone:
+
+1. In Telegram, message [@BotFather](https://t.me/BotFather) and run `/newbot`, following the prompts
+2. Copy the bot token it gives you into `TELEGRAM_BOT_TOKEN`
+3. Send your new bot a message (e.g. "hi") to start a chat
+4. Visit `https://api.telegram.org/bot<TOKEN>/getUpdates` and find `"chat":{"id": ...}` — that's your `TELEGRAM_CHAT_ID`
+5. Restart the dev server and the worker, then send a test message from Settings → Telegram
+
+### Background Worker
+
+The background worker runs price checks, reminder due-checks, and the daily digest:
 
 ```bash
 npm run worker
 ```
 
-Keep this running in a separate terminal.
+Keep this running in a separate terminal (or as a system service). It:
+
+- Checks active price alerts every 60 seconds and fires desktop + Telegram notifications when triggered
+- Checks for reminders that have become due and pushes a notification once per reminder
+- Sends a daily Telegram briefing (today's calendar events + due/overdue/high-priority tasks) at `DAILY_DIGEST_TIME` (default 07:00)
 
 ## Project Structure
 
@@ -105,14 +124,16 @@ Keep this running in a separate terminal.
 │   │   ├── calendar/      # OAuth flow + events
 │   │   ├── reminders/     # CRUD endpoints
 │   │   ├── obsidian/      # notes list + search
-│   │   └── solana/        # wallet + transactions
+│   │   ├── solana/        # wallet + transactions
+│   │   └── telegram/      # Telegram config status + test message
 │   ├── settings/          # Settings page
+│   ├── dashboard/         # Grid dashboard (crypto, wallet, notes, etc.)
 │   ├── layout.tsx         # Root layout with sidebar/topbar
-│   ├── page.tsx           # Main dashboard
+│   ├── page.tsx           # Today view (default landing page)
 │   └── globals.css        # Global styles + theme
 ├── components/
 │   ├── layout/            # TopBar, Sidebar, CommandPalette
-│   └── widgets/           # All dashboard widgets
+│   └── widgets/           # All dashboard + Today widgets
 ├── lib/
 │   ├── db.ts              # SQLite helpers
 │   ├── crypto.ts          # CoinGecko + Binance helpers
@@ -120,12 +141,14 @@ Keep this running in a separate terminal.
 │   ├── google-calendar.ts # OAuth + Calendar API
 │   ├── obsidian.ts        # Vault file reader + search
 │   ├── alerts.ts          # Alert evaluation logic
-│   └── notifications.ts   # Desktop notification helper
+│   ├── notifications.ts   # Desktop + Telegram notification helpers
+│   ├── telegram.ts        # Telegram Bot API client
+│   └── daily-digest.ts    # Builds & sends the daily Telegram briefing
 ├── store/jarvis.ts         # Zustand store
 ├── hooks/                 # SWR + WebSocket hooks
 ├── scripts/
 │   ├── db-init.ts         # Database initialization
-│   ├── alert-worker.ts    # Background price checker
+│   ├── alert-worker.ts    # Background worker: alerts, reminders, daily digest
 │   └── calendar-auth.ts   # CLI auth helper
 └── data/                  # SQLite database (gitignored)
 ```

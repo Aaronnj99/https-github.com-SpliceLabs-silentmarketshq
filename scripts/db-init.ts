@@ -56,6 +56,12 @@ function initDb() {
     );
   `)
 
+  // Migration: add notified_at to reminders for due-reminder push notifications
+  const reminderColumns = db.prepare("PRAGMA table_info(reminders)").all() as { name: string }[]
+  if (!reminderColumns.some((c) => c.name === 'notified_at')) {
+    db.exec('ALTER TABLE reminders ADD COLUMN notified_at TEXT')
+  }
+
   console.log('✅ Database initialized at:', DB_PATH)
   console.log('📊 Tables created: alerts, reminders, settings, alert_history')
 
