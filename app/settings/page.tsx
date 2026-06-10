@@ -14,6 +14,7 @@ const SECTIONS: SettingSection[] = [
   { id: 'calendar', title: 'Google Calendar', description: 'Connect your calendar' },
   { id: 'obsidian', title: 'Obsidian Vault', description: 'Link your notes vault' },
   { id: 'solana', title: 'Solana Wallet', description: 'Track your wallet' },
+  { id: 'telegram', title: 'Telegram', description: 'Phone push notifications' },
   { id: 'notifications', title: 'Notifications', description: 'Desktop notification settings' },
 ]
 
@@ -78,6 +79,8 @@ export default function SettingsPage() {
 
   const [calendarConnected, setCalendarConnected] = useState(false)
   const [calendarLoading, setCalendarLoading] = useState(true)
+  const [telegramConfigured, setTelegramConfigured] = useState(false)
+  const [telegramLoading, setTelegramLoading] = useState(true)
   const [testingConnection, setTestingConnection] = useState<string | null>(null)
   const [testResults, setTestResults] = useState<Record<string, { ok: boolean; message: string }>>({})
 
@@ -95,7 +98,36 @@ export default function SettingsPage() {
         setCalendarLoading(false)
       })
       .catch(() => setCalendarLoading(false))
+
+    // Fetch Telegram configuration status
+    fetch('/api/telegram/test')
+      .then((r) => r.json())
+      .then((data: { configured?: boolean }) => {
+        setTelegramConfigured(data.configured ?? false)
+        setTelegramLoading(false)
+      })
+      .catch(() => setTelegramLoading(false))
   }, [calendarStatus])
+
+  const sendTelegramTest = async () => {
+    setTestingConnection('telegram')
+    try {
+      const res = await fetch('/api/telegram/test', { method: 'POST' })
+      const data = await res.json() as { configured?: boolean; error?: string }
+      if (res.ok) {
+        setTestResults((p) => ({ ...p, telegram: { ok: true, message: 'Sent' } }))
+      } else {
+        setTestResults((p) => ({ ...p, telegram: { ok: false, message: data.error ?? `HTTP ${res.status}` } }))
+      }
+    } catch (e) {
+      setTestResults((p) => ({
+        ...p,
+        telegram: { ok: false, message: e instanceof Error ? e.message : 'Request failed' },
+      }))
+    } finally {
+      setTestingConnection(null)
+    }
+  }
 
   const testEndpoint = async (name: string, url: string) => {
     setTestingConnection(name)
@@ -387,6 +419,77 @@ export default function SettingsPage() {
         </div>
       </SectionCard>
 
+      {/* Telegram Section */}
+      <SectionCard title="Telegram" description="Get JARVIS notifications pushed straight to your phone">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <StatusBadge
+              ok={telegramConfigured}
+              label={telegramLoading ? 'Checking...' : telegramConfigured ? 'Configured' : 'Not configured'}
+            />
+            {telegramConfigured && (
+              <button
+                onClick={sendTelegramTest}
+                disabled={testingConnection === 'telegram'}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '6px',
+                  background: 'rgba(0,212,255,0.1)', border: '1px solid rgba(0,212,255,0.3)',
+                  borderRadius: '6px', color: '#00D4FF', fontSize: '12px',
+                  fontFamily: 'JetBrains Mono, monospace', padding: '8px 16px', cursor: 'pointer',
+                }}
+              >
+                {testingConnection === 'telegram' ? <RefreshCw size={12} style={{ animation: 'spin 1s linear infinite' }} /> : null}
+                Send Test Message
+              </button>
+            )}
+            {testResults.telegram && (
+              <StatusBadge ok={testResults.telegram.ok} label={testResults.telegram.message} />
+            )}
+          </div>
+
+          <div>
+            <label style={labelStyle}>Setup Instructions</label>
+            <ol style={{ margin: 0, padding: '0 0 0 16px', color: '#4B5563', fontSize: '12px', fontFamily: 'JetBrains Mono, monospace', lineHeight: '2' }}>
+              <li>In Telegram, message <code style={{ color: '#9945FF' }}>@BotFather</code> and run <code style={{ color: '#9945FF' }}>/newbot</code></li>
+              <li>Copy the bot token it gives you</li>
+              <li>Message your new bot (anything, e.g. &quot;hi&quot;) to start a chat</li>
+              <li>Visit <code style={{ color: '#9945FF' }}>https://api.telegram.org/bot&lt;TOKEN&gt;/getUpdates</code> to find your chat ID</li>
+              <li>Set <code style={{ color: '#00D4FF' }}>TELEGRAM_BOT_TOKEN</code> and <code style={{ color: '#00D4FF' }}>TELEGRAM_CHAT_ID</code> in .env.local</li>
+            </ol>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <div>
+              <label style={labelStyle}>Bot Token</label>
+              <input type="password" placeholder="Set in .env.local" readOnly style={inputStyle} />
+            </div>
+            <div>
+              <label style={labelStyle}>Chat ID</label>
+              <input type="password" placeholder="Set in .env.local" readOnly style={inputStyle} />
+            </div>
+          </div>
+
+          <div
+            style={{
+              padding: '12px 16px',
+              background: 'rgba(0,212,255,0.04)',
+              border: '1px solid rgba(0,212,255,0.1)',
+              borderRadius: '8px',
+            }}
+          >
+            <div style={{ fontSize: '12px', color: '#9CA3AF', fontFamily: 'JetBrains Mono, monospace', lineHeight: '1.8' }}>
+              <strong style={{ color: '#00D4FF' }}>What gets sent</strong><br />
+              Price alert triggers, reminders becoming due, and a daily morning briefing
+              (today&apos;s calendar events + tasks). The briefing time is set with{' '}
+              <code style={{ background: 'rgba(0,0,0,0.3)', padding: '2px 6px', borderRadius: '3px', color: '#00FF94' }}>DAILY_DIGEST_TIME</code>{' '}
+              (default 07:00). Requires{' '}
+              <code style={{ background: 'rgba(0,0,0,0.3)', padding: '2px 6px', borderRadius: '3px', color: '#00FF94' }}>npm run worker</code>{' '}
+              running.
+            </div>
+          </div>
+        </div>
+      </SectionCard>
+
       {/* Notifications Section */}
       <SectionCard title="Notifications" description="Configure desktop notifications for alerts and reminders">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -462,6 +565,11 @@ OBSIDIAN_VAULT_PATH=/absolute/path/to/your/vault
 
 # CoinGecko (optional)
 COINGECKO_API_KEY=
+
+# Telegram (phone push notifications)
+TELEGRAM_BOT_TOKEN=
+TELEGRAM_CHAT_ID=
+DAILY_DIGEST_TIME=07:00  # HH:MM, 24-hour, server local time
 
 # App
 NEXT_PUBLIC_APP_NAME=JARVIS

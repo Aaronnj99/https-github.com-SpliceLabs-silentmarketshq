@@ -1,5 +1,6 @@
 import notifier from 'node-notifier'
 import path from 'path'
+import { sendTelegramMessage, escapeHtml } from './telegram'
 
 interface NotificationOptions {
   title: string
@@ -38,6 +39,11 @@ export function sendAlertNotification(
     message: `${coin} has ${direction} ${formatPrice(targetPrice)}. Current price: ${formatPrice(currentPrice)}`,
     sound: true,
   })
+
+  const arrow = condition === 'above' ? '▲' : '▼'
+  void sendTelegramMessage(
+    `${arrow} <b>JARVIS Alert: ${escapeHtml(coin)}</b>\n${escapeHtml(coin)} has ${direction} ${formatPrice(targetPrice)}\nCurrent price: ${formatPrice(currentPrice)}`
+  )
 }
 
 export function sendReminderNotification(title: string, description?: string): void {
@@ -46,4 +52,8 @@ export function sendReminderNotification(title: string, description?: string): v
     message: description ?? 'You have a reminder due.',
     sound: true,
   })
+
+  void sendTelegramMessage(
+    `⏰ <b>Reminder: ${escapeHtml(title)}</b>${description ? `\n${escapeHtml(description)}` : ''}`
+  )
 }

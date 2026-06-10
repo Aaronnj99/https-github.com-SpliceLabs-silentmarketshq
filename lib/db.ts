@@ -61,6 +61,12 @@ function initTables(db: Database.Database) {
       triggered_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
   `)
+
+  // Migration: add notified_at to reminders for due-reminder push notifications
+  const reminderColumns = db.prepare("PRAGMA table_info(reminders)").all() as { name: string }[]
+  if (!reminderColumns.some((c) => c.name === 'notified_at')) {
+    db.exec('ALTER TABLE reminders ADD COLUMN notified_at TEXT')
+  }
 }
 
 // Alert CRUD
@@ -143,6 +149,7 @@ export interface Reminder {
   is_done: number
   created_at: string
   completed_at: string | null
+  notified_at: string | null
 }
 
 export function getReminders(includeCompleted = false): Reminder[] {
@@ -183,6 +190,23 @@ export function updateReminder(id: number, updates: Partial<Reminder>): Reminder
 export function deleteReminder(id: number): void {
   const db = getDb()
   db.prepare('DELETE FROM reminders WHERE id = ?').run(id)
+}
+
+// Reminders that have become due and haven't triggered a push notification yet
+export function getDueUnnotifiedReminders(): Reminder[] {
+  const db = getDb()
+  return db
+    .prepare(
+      `SELECT * FROM reminders
+       WHERE is_done = 0 AND due_at IS NOT NULL
+       AND due_at <= datetime('now') AND notified_at IS NULL`
+    )
+    .all() as Reminder[]
+}
+
+export function markReminderNotified(id: number): void {
+  const db = getDb()
+  db.prepare('UPDATE reminders SET notified_at = datetime("now") WHERE id = ?').run(id)
 }
 
 // Settings key/value store
