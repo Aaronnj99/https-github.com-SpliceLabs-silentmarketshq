@@ -1,8 +1,6 @@
 import cron from 'node-cron'
-import axios from 'axios'
-import { getAlerts, triggerAlert, Alert } from '../lib/db'
+import { runAlertSweep, formatAlertMessage } from '../lib/alerts'
 import { sendAlertNotification } from '../lib/notifications'
-import { fetchPrices, getCoinGeckoId } from '../lib/crypto'
 
 // Load environment variables if dotenv is available
 try {
@@ -21,52 +19,14 @@ async function checkAlerts() {
   isChecking = true
 
   try {
-    const activeAlerts = getAlerts(true)
-    if (activeAlerts.length === 0) {
-      isChecking = false
-      return
-    }
+    const { checked, triggered } = await runAlertSweep()
+    if (checked === 0) return
 
-    // Get unique coins from active alerts
-    const coins = [...new Set(activeAlerts.map((a) => a.coin.toUpperCase()))]
-    console.log(`[${new Date().toISOString()}] Checking ${activeAlerts.length} alerts for ${coins.join(', ')}`)
+    console.log(`[${new Date().toISOString()}] Checked ${checked} active alert(s)`)
 
-    let prices: Record<string, number> = {}
-
-    try {
-      const priceData = await fetchPrices(coins)
-      for (const coin of priceData) {
-        prices[coin.symbol.toUpperCase()] = coin.current_price
-      }
-    } catch (err) {
-      console.error('Failed to fetch prices from CoinGecko:', err)
-      isChecking = false
-      return
-    }
-
-    const triggered: Alert[] = []
-
-    for (const alert of activeAlerts) {
-      const symbol = alert.coin.toUpperCase()
-      const currentPrice = prices[symbol]
-
-      if (currentPrice === undefined) {
-        console.warn(`No price for ${symbol}`)
-        continue
-      }
-
-      const shouldTrigger =
-        (alert.condition === 'above' && currentPrice >= alert.target_price) ||
-        (alert.condition === 'below' && currentPrice <= alert.target_price)
-
-      if (shouldTrigger) {
-        console.log(
-          `🔔 Alert triggered! ${symbol} ${alert.condition} $${alert.target_price} — current: $${currentPrice}`
-        )
-        triggerAlert(alert.id, currentPrice)
-        sendAlertNotification(symbol, alert.condition, alert.target_price, currentPrice)
-        triggered.push(alert)
-      }
+    for (const { alert, currentPrice } of triggered) {
+      console.log(`🔔 ${formatAlertMessage(alert, currentPrice)}`)
+      sendAlertNotification(alert.coin, alert.condition, alert.target_price, currentPrice)
     }
 
     if (triggered.length === 0) {

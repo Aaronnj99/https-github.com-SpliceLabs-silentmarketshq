@@ -40,7 +40,7 @@ async function runMarketScanner(): Promise<string> {
 }
 
 async function runPortfolioRisk(): Promise<string> {
-  const alerts = getAlerts(true)
+  const alerts = await getAlerts(true)
   const alertLines = alerts.length
     ? alerts.map((a) => `${a.coin} ${a.condition} $${a.target_price.toLocaleString()}`).join('\n')
     : 'No active alerts.'
@@ -73,8 +73,8 @@ async function runNewsDigest(): Promise<string> {
 
 async function runDailyBriefing(): Promise<string> {
   const prices = await fetchPrices(TRACKED_COINS)
-  const reminders = getReminders(false).slice(0, 5)
-  const alerts = getAlerts(true)
+  const reminders = (await getReminders(false)).slice(0, 5)
+  const alerts = await getAlerts(true)
 
   const priceLine = prices.map((p) => `${p.symbol} $${formatPrice(p.current_price)}`).join(', ')
   const reminderLines = reminders.length
@@ -127,14 +127,14 @@ export const AGENT_JOBS: AgentJobSpec[] = [
 ]
 
 export async function executeJob(spec: AgentJobSpec): Promise<AgentJobRun> {
-  const jobRow = createJobRun(spec.key, spec.name)
+  const jobRow = await createJobRun(spec.key, spec.name)
   try {
     const output = await spec.run()
-    completeJobRun(jobRow.id, output)
+    await completeJobRun(jobRow.id, output)
     return { ...jobRow, status: 'complete', output }
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error'
-    failJobRun(jobRow.id, message)
+    await failJobRun(jobRow.id, message)
     return { ...jobRow, status: 'error', error: message }
   }
 }

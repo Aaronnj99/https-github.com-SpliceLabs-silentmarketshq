@@ -4,7 +4,7 @@ import { getUpcomingEvents, isCalendarConnected } from '@/lib/google-calendar'
 export const dynamic = 'force-dynamic'
 
 export async function GET() {
-  const connected = isCalendarConnected()
+  const connected = await isCalendarConnected()
 
   if (!connected) {
     return NextResponse.json({

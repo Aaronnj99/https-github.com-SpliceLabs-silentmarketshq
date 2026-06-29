@@ -30,10 +30,10 @@ export async function exchangeCodeForTokens(code: string): Promise<{
 
   // Store refresh token
   if (tokens.refresh_token) {
-    setSetting('google_refresh_token', tokens.refresh_token)
+    await setSetting('google_refresh_token', tokens.refresh_token)
   }
   if (tokens.access_token) {
-    setSetting('google_access_token', tokens.access_token)
+    await setSetting('google_access_token', tokens.access_token)
   }
 
   return {
@@ -44,7 +44,7 @@ export async function exchangeCodeForTokens(code: string): Promise<{
 
 export async function getAuthenticatedClient() {
   const refreshToken =
-    getSetting('google_refresh_token') ?? process.env.GOOGLE_REFRESH_TOKEN
+    (await getSetting('google_refresh_token')) ?? process.env.GOOGLE_REFRESH_TOKEN
 
   if (!refreshToken) {
     throw new Error('No Google refresh token available. Please authenticate first.')
@@ -107,8 +107,8 @@ export async function getUpcomingEvents(
   }))
 }
 
-export function isCalendarConnected(): boolean {
+export async function isCalendarConnected(): Promise<boolean> {
   const token =
-    getSetting('google_refresh_token') ?? process.env.GOOGLE_REFRESH_TOKEN
+    (await getSetting('google_refresh_token')) ?? process.env.GOOGLE_REFRESH_TOKEN
   return Boolean(token)
 }

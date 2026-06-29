@@ -1,4 +1,5 @@
 import { getAlerts, triggerAlert, Alert } from './db'
+import { fetchPrices } from './crypto'
 
 export interface PriceMap {
   [symbol: string]: number
@@ -9,8 +10,8 @@ export interface TriggeredAlert {
   currentPrice: number
 }
 
-export function evaluateAlerts(prices: PriceMap): TriggeredAlert[] {
-  const activeAlerts = getAlerts(true)
+export async function evaluateAlerts(prices: PriceMap): Promise<TriggeredAlert[]> {
+  const activeAlerts = await getAlerts(true)
   const triggered: TriggeredAlert[] = []
 
   for (const alert of activeAlerts) {
@@ -24,12 +25,35 @@ export function evaluateAlerts(prices: PriceMap): TriggeredAlert[] {
       (alert.condition === 'below' && currentPrice <= alert.target_price)
 
     if (shouldTrigger) {
-      triggerAlert(alert.id, currentPrice)
+      await triggerAlert(alert.id, currentPrice)
       triggered.push({ alert, currentPrice })
     }
   }
 
   return triggered
+}
+
+export interface AlertSweepResult {
+  checked: number
+  triggered: TriggeredAlert[]
+}
+
+export async function runAlertSweep(): Promise<AlertSweepResult> {
+  const activeAlerts = await getAlerts(true)
+  if (activeAlerts.length === 0) {
+    return { checked: 0, triggered: [] }
+  }
+
+  const coins = [...new Set(activeAlerts.map((a) => a.coin.toUpperCase()))]
+  const priceData = await fetchPrices(coins)
+
+  const prices: PriceMap = {}
+  for (const coin of priceData) {
+    prices[coin.symbol.toUpperCase()] = coin.current_price
+  }
+
+  const triggered = await evaluateAlerts(prices)
+  return { checked: activeAlerts.length, triggered }
 }
 
 export function formatAlertMessage(alert: Alert, currentPrice: number): string {

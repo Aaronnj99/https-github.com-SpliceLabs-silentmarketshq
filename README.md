@@ -20,7 +20,7 @@ A full-stack Next.js 14 dashboard with crypto prices, calendar, reminders, Obsid
 - **Next.js 14** (App Router, TypeScript)
 - **Tailwind CSS** with custom dark terminal theme
 - **Zustand** for state management
-- **better-sqlite3** for local storage (alerts, reminders)
+- **@libsql/client** (SQLite/Turso) for storage — a local file in dev, a hosted Turso DB in production
 - **Recharts** for interactive price charts
 - **Binance WebSocket** for live price feeds
 - **CoinGecko API** for market data
@@ -75,6 +75,9 @@ Open [http://localhost:3000](http://localhost:3000)
 | `HELIUS_API_KEY` | Optional | Better Solana token metadata |
 | `NEXT_PUBLIC_DEFAULT_COINS` | Optional | Coins to track, e.g. `BTC,SOL,ETH` |
 | `ANTHROPIC_API_KEY` | Recommended | Enables APEX Brain chat, market briefs, and Agent Ops |
+| `TURSO_DATABASE_URL` | Cloud only | Hosted libSQL DB URL — leave unset to use a local SQLite file in `./data` |
+| `TURSO_AUTH_TOKEN` | Cloud only | Auth token for the Turso database above |
+| `CRON_SECRET` | Cloud only | Shared secret that authenticates calls to `/api/cron/*` |
 
 ### Google Calendar Setup
 
@@ -111,6 +114,50 @@ npm run agents
 
 Requires `ANTHROPIC_API_KEY` in `.env.local`. Keep this running in a separate terminal alongside the price alert worker. Jobs can also be triggered manually from the Agent Ops panel's "RUN" button without this worker running.
 
+## Deploying to Vercel
+
+APEX can run as a hosted web app at a real URL — no Mac required to be on, accessible from any device (including iPad) over the internet. This requires a hosted database, since Vercel's serverless functions have no persistent disk.
+
+### 1. Create a Turso database
+
+[Turso](https://turso.tech) is a hosted SQLite-compatible (libSQL) database with a free tier, and APEX's storage layer (`lib/db.ts`) already speaks libSQL — no schema changes needed.
+
+1. Sign up at [turso.tech](https://turso.tech) and create a database (via their web dashboard or `turso db create apex`)
+2. Grab the database URL (`turso db show apex --url`) and create an auth token (`turso db tokens create apex`)
+
+### 2. Import the project into Vercel
+
+1. Push this repo to GitHub (already done if you're reading this from the repo)
+2. Go to [vercel.com/new](https://vercel.com/new) and import the repository
+3. Vercel auto-detects Next.js — no build settings need to change
+
+### 3. Set environment variables in the Vercel project
+
+Add these in the Vercel dashboard under Project Settings → Environment Variables:
+
+| Variable | Value |
+|----------|-------|
+| `TURSO_DATABASE_URL` | From step 1 |
+| `TURSO_AUTH_TOKEN` | From step 1 |
+| `CRON_SECRET` | Any long random string — generate with `openssl rand -hex 32` |
+| `ANTHROPIC_API_KEY` | Same key as local dev, to enable APEX Brain + Agent Ops |
+| `SOLANA_WALLET_ADDRESS`, `COINGECKO_API_KEY`, `HELIUS_API_KEY`, `NEXT_PUBLIC_DEFAULT_COINS` | Same as local dev, if used |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI` | Same as local dev, but set `GOOGLE_REDIRECT_URI` to `https://<your-vercel-domain>/api/calendar/callback` and add that URL as an authorized redirect URI in Google Cloud Console |
+
+Do **not** set `OBSIDIAN_VAULT_PATH` — there's no local vault to read on Vercel, so the Obsidian widget is automatically hidden on cloud deployments (`app/page.tsx` checks `process.env.VERCEL`).
+
+### 4. Deploy
+
+Click Deploy. Once live, open the assigned `*.vercel.app` URL from any device, including your iPad, with no Mac required to be running.
+
+### Background jobs in the cloud
+
+`vercel.json` schedules two cron jobs hitting `/api/cron/agents` and `/api/cron/alerts` once daily — **Vercel's Hobby plan only allows cron jobs to run once per day**, so this covers the Daily Ops Briefing well but won't replicate the 5/15-minute local schedules. Options:
+
+- Leave it as-is and use the Agent Ops panel's "RUN" button for on-demand checks
+- Use a free external scheduler (e.g. [cron-job.org](https://cron-job.org), or a scheduled GitHub Actions workflow) to hit `/api/cron/agents` and `/api/cron/alerts` as often as you like, sending header `Authorization: Bearer <CRON_SECRET>`
+- Upgrade to Vercel Pro, which allows higher-frequency cron schedules, and adjust the schedules in `vercel.json`
+
 ## Running as a Native macOS App (Electron)
 
 APEX can run as a standalone `.app` — no browser needed, dock icon, native window.
@@ -145,7 +192,8 @@ Output is in `dist-electron/`. Drag `APEX.app` to your `/Applications` folder an
 │   │   ├── obsidian/      # notes list + search
 │   │   ├── solana/        # wallet + transactions
 │   │   ├── ai/            # Claude chat + market brief endpoints
-│   │   └── jobs/          # Agent Ops job status + run-now trigger
+│   │   ├── jobs/          # Agent Ops job status + run-now trigger
+│   │   └── cron/          # Cron-callable agent/alert sweeps (Vercel Cron / external scheduler)
 │   ├── settings/          # Settings page
 │   ├── layout.tsx         # Root layout with sidebar/topbar
 │   ├── page.tsx           # Main dashboard
@@ -154,7 +202,7 @@ Output is in `dist-electron/`. Drag `APEX.app` to your `/Applications` folder an
 │   ├── layout/            # TopBar, Sidebar, CommandPalette
 │   └── widgets/           # All dashboard widgets (incl. ApexBrain, AgentOps)
 ├── lib/
-│   ├── db.ts              # SQLite helpers
+│   ├── db.ts              # libSQL/Turso storage helpers (local file in dev, Turso in prod)
 │   ├── crypto.ts          # CoinGecko + Binance helpers
 │   ├── solana.ts          # Solana RPC helpers
 │   ├── google-calendar.ts # OAuth + Calendar API
@@ -162,7 +210,8 @@ Output is in `dist-electron/`. Drag `APEX.app` to your `/Applications` folder an
 │   ├── alerts.ts          # Alert evaluation logic
 │   ├── notifications.ts   # Desktop notification helper
 │   ├── apex-ai.ts         # Claude chat + market brief helpers
-│   └── agent-jobs.ts      # Autonomous agent job specs + execution
+│   ├── agent-jobs.ts      # Autonomous agent job specs + execution
+│   └── cron-auth.ts       # Bearer-token auth for /api/cron/* routes
 ├── store/apex.ts         # Zustand store
 ├── hooks/                 # SWR + WebSocket hooks
 ├── scripts/

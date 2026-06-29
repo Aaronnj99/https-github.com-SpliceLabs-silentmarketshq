@@ -5,8 +5,8 @@ export const dynamic = 'force-dynamic'
 
 export async function GET() {
   try {
-    const alerts = getAlerts()
-    const history = getAlertHistory()
+    const alerts = await getAlerts()
+    const history = await getAlertHistory()
     return NextResponse.json({ alerts, history })
   } catch (error) {
     console.error('Alerts GET error:', error)
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const alert = createAlert(
+    const alert = await createAlert(
       coin,
       condition as 'above' | 'below',
       target_price,
@@ -68,7 +68,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     const body = await request.json() as Record<string, unknown>
-    const updated = updateAlert(id, body)
+    const updated = await updateAlert(id, body)
     if (!updated) {
       return NextResponse.json({ error: 'Alert not found' }, { status: 404 })
     }
@@ -87,7 +87,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid or missing id' }, { status: 400 })
     }
 
-    deleteAlert(id)
+    await deleteAlert(id)
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Alerts DELETE error:', error)

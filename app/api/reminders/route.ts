@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const includeCompleted = searchParams.get('completed') === '1'
-    const reminders = getReminders(includeCompleted)
+    const reminders = await getReminders(includeCompleted)
     return NextResponse.json(reminders)
   } catch (error) {
     console.error('Reminders GET error:', error)
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'priority must be low, normal, or high' }, { status: 400 })
     }
 
-    const reminder = createReminder(
+    const reminder = await createReminder(
       title.trim(),
       description,
       due_at,
@@ -56,7 +56,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     const body = await request.json() as Record<string, unknown>
-    const updated = updateReminder(id, body)
+    const updated = await updateReminder(id, body)
     if (!updated) {
       return NextResponse.json({ error: 'Reminder not found' }, { status: 404 })
     }
@@ -75,7 +75,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid or missing id' }, { status: 400 })
     }
 
-    deleteReminder(id)
+    await deleteReminder(id)
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Reminders DELETE error:', error)

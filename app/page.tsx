@@ -8,6 +8,10 @@ import { MarketOverview } from '@/components/widgets/MarketOverview'
 import { ApexBrain } from '@/components/widgets/ApexBrain'
 import { AgentOps } from '@/components/widgets/AgentOps'
 
+// Obsidian reads notes from a local vault folder on disk, which doesn't exist
+// in Vercel's serverless environment — hide the widget on cloud deployments.
+const isCloudDeployment = process.env.VERCEL === '1'
+
 export default function Home() {
   return (
     <div style={{
@@ -39,12 +43,14 @@ export default function Home() {
       </div>
 
       {/* Row 4 */}
-      <div style={{ gridColumn: '1', gridRow: '4' }}>
+      <div style={{ gridColumn: isCloudDeployment ? '1 / -1' : '1', gridRow: '4' }}>
         <AlertManager />
       </div>
-      <div style={{ gridColumn: '2', gridRow: '4' }}>
-        <ObsidianWidget />
-      </div>
+      {!isCloudDeployment && (
+        <div style={{ gridColumn: '2', gridRow: '4' }}>
+          <ObsidianWidget />
+        </div>
+      )}
 
       {/* Row 5 - full width */}
       <div style={{ gridColumn: '1 / -1', gridRow: '5' }}>

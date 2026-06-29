@@ -3,8 +3,8 @@ import { getRecentJobRuns, getLatestJobRunPerKey } from '@/lib/db'
 import { AGENT_JOBS, executeJobByKey } from '@/lib/agent-jobs'
 
 export async function GET() {
-  const latest = getLatestJobRunPerKey()
-  const history = getRecentJobRuns(30)
+  const latest = await getLatestJobRunPerKey()
+  const history = await getRecentJobRuns(30)
 
   const stations = AGENT_JOBS.map((spec) => ({
     key: spec.key,
