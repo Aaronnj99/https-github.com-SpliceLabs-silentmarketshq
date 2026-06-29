@@ -60,6 +60,20 @@ function initTables(db: Database.Database) {
       triggered_price REAL NOT NULL,
       triggered_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
+
+    CREATE TABLE IF NOT EXISTS agent_jobs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      job_key TEXT NOT NULL,
+      job_name TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'running' CHECK(status IN ('running', 'complete', 'error')),
+      output TEXT,
+      error TEXT,
+      started_at TEXT NOT NULL DEFAULT (datetime('now')),
+      completed_at TEXT,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_agent_jobs_key ON agent_jobs(job_key, created_at DESC);
   `)
 }
 
@@ -208,4 +222,62 @@ export function getAllSettings(): Record<string, string> {
     value: string
   }[]
   return Object.fromEntries(rows.map((r) => [r.key, r.value]))
+}
+
+// Agent job runs (Agent Ops / autonomous AI jobs)
+export interface AgentJobRun {
+  id: number
+  job_key: string
+  job_name: string
+  status: 'running' | 'complete' | 'error'
+  output: string | null
+  error: string | null
+  started_at: string
+  completed_at: string | null
+  created_at: string
+}
+
+export function createJobRun(jobKey: string, jobName: string): AgentJobRun {
+  const db = getDb()
+  const stmt = db.prepare(
+    'INSERT INTO agent_jobs (job_key, job_name, status) VALUES (?, ?, ?)'
+  )
+  const result = stmt.run(jobKey, jobName, 'running')
+  return db.prepare('SELECT * FROM agent_jobs WHERE id = ?').get(result.lastInsertRowid) as AgentJobRun
+}
+
+export function completeJobRun(id: number, output: string): void {
+  const db = getDb()
+  db.prepare(
+    'UPDATE agent_jobs SET status = ?, output = ?, completed_at = datetime("now") WHERE id = ?'
+  ).run('complete', output, id)
+}
+
+export function failJobRun(id: number, error: string): void {
+  const db = getDb()
+  db.prepare(
+    'UPDATE agent_jobs SET status = ?, error = ?, completed_at = datetime("now") WHERE id = ?'
+  ).run('error', error, id)
+}
+
+export function getRecentJobRuns(limit = 30): AgentJobRun[] {
+  const db = getDb()
+  return db
+    .prepare('SELECT * FROM agent_jobs ORDER BY created_at DESC LIMIT ?')
+    .all(limit) as AgentJobRun[]
+}
+
+export function getLatestJobRunPerKey(): AgentJobRun[] {
+  const db = getDb()
+  return db
+    .prepare(
+      `SELECT * FROM agent_jobs aj
+       WHERE id = (
+         SELECT id FROM agent_jobs
+         WHERE job_key = aj.job_key
+         ORDER BY created_at DESC LIMIT 1
+       )
+       ORDER BY job_key`
+    )
+    .all() as AgentJobRun[]
 }

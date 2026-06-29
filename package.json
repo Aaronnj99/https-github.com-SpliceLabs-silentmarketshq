@@ -10,6 +10,7 @@
     "db:init": "npx ts-node --project tsconfig.scripts.json scripts/db-init.ts",
     "calendar:auth": "npx ts-node --project tsconfig.scripts.json scripts/calendar-auth.ts",
     "worker": "npx ts-node --project tsconfig.scripts.json scripts/alert-worker.ts",
+    "agents": "npx ts-node --project tsconfig.scripts.json scripts/agent-worker.ts",
     "electron:dev": "concurrently \"next dev\" \"wait-on http://localhost:3000 && electron .\"",
     "electron:build": "BUILD_STANDALONE=1 next build && electron-builder --mac",
     "electron:build:dir": "BUILD_STANDALONE=1 next build && electron-builder --mac --dir"
