@@ -17,7 +17,7 @@ async function complete(system: string, user: string): Promise<string> {
     throw new Error('ANTHROPIC_API_KEY not configured')
   }
   const response = await client.messages.create({
-    model: 'claude-opus-4-7',
+    model: 'claude-opus-4-8',
     max_tokens: 500,
     system,
     messages: [{ role: 'user', content: user }],

@@ -22,7 +22,7 @@ export async function chatWithApex(
   context: ApexContext
 ): Promise<string> {
   const response = await client.messages.create({
-    model: 'claude-opus-4-7',
+    model: 'claude-opus-4-8',
     max_tokens: 1024,
     system: buildSystemPrompt(context),
     messages: messages.map((m) => ({ role: m.role, content: m.content })),
@@ -33,7 +33,7 @@ export async function chatWithApex(
 
 export async function analyzePortfolio(context: ApexContext): Promise<string> {
   const response = await client.messages.create({
-    model: 'claude-opus-4-7',
+    model: 'claude-opus-4-8',
     max_tokens: 512,
     system: buildSystemPrompt(context),
     messages: [
