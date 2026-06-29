@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getRecentJobRuns, getLatestJobRunPerKey } from '@/lib/db'
 import { AGENT_JOBS, executeJobByKey } from '@/lib/agent-jobs'
 
+export const dynamic = 'force-dynamic'
+export const maxDuration = 60
+
 export async function GET() {
   const latest = await getLatestJobRunPerKey()
   const history = await getRecentJobRuns(30)
