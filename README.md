@@ -12,6 +12,8 @@ A full-stack Next.js 14 dashboard with crypto prices, calendar, reminders, Obsid
 - **Solana Wallet** — SOL balance, SPL tokens, and recent transactions via RPC
 - **Market Overview** — Fear & Greed index, total market cap, BTC dominance
 - **Command Palette** — `⌘K` for quick navigation and search
+- **APEX Brain** — Claude-powered chat and on-demand market briefings with live access to your prices, alerts, reminders, and wallet
+- **Agent Ops** — Mission-control panel for four autonomous Claude agents (market scanner, portfolio risk, news digest, daily briefing) that run on a schedule or on demand
 
 ## Tech Stack
 
@@ -25,6 +27,8 @@ A full-stack Next.js 14 dashboard with crypto prices, calendar, reminders, Obsid
 - **@solana/web3.js** for wallet data
 - **Google APIs** for calendar integration
 - **shadcn/ui-style** components with Radix UI
+- **@anthropic-ai/sdk** (Claude) for the AI brain and autonomous agent jobs
+- **node-cron** for scheduling background workers
 
 ## Quick Start
 
@@ -70,6 +74,7 @@ Open [http://localhost:3000](http://localhost:3000)
 | `COINGECKO_API_KEY` | Optional | Pro key for higher rate limits |
 | `HELIUS_API_KEY` | Optional | Better Solana token metadata |
 | `NEXT_PUBLIC_DEFAULT_COINS` | Optional | Coins to track, e.g. `BTC,SOL,ETH` |
+| `ANTHROPIC_API_KEY` | Recommended | Enables APEX Brain chat, market briefs, and Agent Ops |
 
 ### Google Calendar Setup
 
@@ -95,6 +100,16 @@ npm run worker
 ```
 
 Keep this running in a separate terminal.
+
+### Agent Ops Worker
+
+Runs the four autonomous Claude agents on their own schedules (market scanner every 5 min, portfolio risk and news digest every 15 min, daily briefing at 8am) and logs each run to SQLite:
+
+```bash
+npm run agents
+```
+
+Requires `ANTHROPIC_API_KEY` in `.env.local`. Keep this running in a separate terminal alongside the price alert worker. Jobs can also be triggered manually from the Agent Ops panel's "RUN" button without this worker running.
 
 ## Running as a Native macOS App (Electron)
 
@@ -128,14 +143,16 @@ Output is in `dist-electron/`. Drag `APEX.app` to your `/Applications` folder an
 │   │   ├── calendar/      # OAuth flow + events
 │   │   ├── reminders/     # CRUD endpoints
 │   │   ├── obsidian/      # notes list + search
-│   │   └── solana/        # wallet + transactions
+│   │   ├── solana/        # wallet + transactions
+│   │   ├── ai/            # Claude chat + market brief endpoints
+│   │   └── jobs/          # Agent Ops job status + run-now trigger
 │   ├── settings/          # Settings page
 │   ├── layout.tsx         # Root layout with sidebar/topbar
 │   ├── page.tsx           # Main dashboard
 │   └── globals.css        # Global styles + theme
 ├── components/
 │   ├── layout/            # TopBar, Sidebar, CommandPalette
-│   └── widgets/           # All dashboard widgets
+│   └── widgets/           # All dashboard widgets (incl. ApexBrain, AgentOps)
 ├── lib/
 │   ├── db.ts              # SQLite helpers
 │   ├── crypto.ts          # CoinGecko + Binance helpers
@@ -143,12 +160,15 @@ Output is in `dist-electron/`. Drag `APEX.app` to your `/Applications` folder an
 │   ├── google-calendar.ts # OAuth + Calendar API
 │   ├── obsidian.ts        # Vault file reader + search
 │   ├── alerts.ts          # Alert evaluation logic
-│   └── notifications.ts   # Desktop notification helper
+│   ├── notifications.ts   # Desktop notification helper
+│   ├── apex-ai.ts         # Claude chat + market brief helpers
+│   └── agent-jobs.ts      # Autonomous agent job specs + execution
 ├── store/apex.ts         # Zustand store
 ├── hooks/                 # SWR + WebSocket hooks
 ├── scripts/
 │   ├── db-init.ts         # Database initialization
 │   ├── alert-worker.ts    # Background price checker
+│   ├── agent-worker.ts    # Autonomous agent job scheduler
 │   └── calendar-auth.ts   # CLI auth helper
 └── data/                  # SQLite database (gitignored)
 ```
